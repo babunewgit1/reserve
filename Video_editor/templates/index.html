@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Follow Please — Video Text Overlay Tool</title>
+    <meta name="description" content="Canva-style batch video text overlay tool with live preview">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* ─── Preview Canvas Area ─── */
+        .preview-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .preview-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .preview-header h2 {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-header .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .preview-canvas-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #08080d;
+            min-height: 320px;
+        }
+        #previewCanvas {
+            border-radius: 8px;
+            cursor: grab;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            max-width: 100%;
+        }
+        #previewCanvas:active {
+            cursor: grabbing;
+        }
+        .preview-toolbar {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .preview-toolbar .coord-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .preview-toolbar .coord-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            min-width: 14px;
+        }
+        .preview-toolbar .coord-slider {
+            width: 140px;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+        .preview-toolbar .coord-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(255,215,0,0.3);
+        }
+        .preview-toolbar .coord-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 32px;
+            text-align: right;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        .preview-toolbar .separator {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+        }
+        .preview-toolbar .load-frame-btn {
+            padding: 6px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-left: auto;
+        }
+        .preview-toolbar .load-frame-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            border-color: var(--border-focus);
+        }
+        .preview-toolbar .load-frame-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Video thumbnail selector */
+        .video-thumb-list {
+            display: none;
+            padding: 8px 20px 12px;
+            border-top: 1px solid var(--border);
+            max-height: 120px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+        .video-thumb-list.active { display: flex; gap: 8px; }
+        .video-thumb-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--text-secondary);
+            transition: all var(--transition);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .video-thumb-item:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-focus);
+            color: var(--text-primary);
+        }
+        .video-thumb-item.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .video-thumb-item .vt-icon { font-size: 14px; }
+
+        /* ─── Redesigned sidebar without old preview ─── */
+        .sidebar .card-body { padding: 16px; }
+        .config-group { margin-bottom: 14px; }
+
+        /* GPU/CPU Toggle Switch */
+        .toggle-switch { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+        .toggle-switch .toggle-label { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .toggle-switch .toggle-label .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+        .toggle-switch .badge.gpu { background: rgba(52,211,153,0.15); color: #34d399; }
+        .toggle-switch .badge.cpu { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .switch .slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .switch input:checked + .slider { background: var(--success); }
+        .switch input:checked + .slider::before { transform: translateX(20px); }
+
+        /* Pause/Stop buttons */
+        .btn-pause { padding: 10px 18px; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: var(--radius-sm); color: #fbbf24; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition); display: none; }
+        .btn-pause:hover { background: rgba(251,191,36,0.25); }
+        .btn-pause.active { display: inline-flex; align-items: center; gap: 6px; }
+        .btn-pause.resumed { background: rgba(52,211,153,0.15); border-color: rgba(52,211,153,0.3); color: #34d399; }
+        .btn-stop { padding: 10px 18px; background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.25); border-radius: var(--radius-sm); color: #f87171; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition); display: none; }
+        .btn-stop:hover { background: rgba(248,113,113,0.25); }
+        .btn-stop.active { display: inline-flex; align-items: center; gap: 6px; }
+    </style>
+</head>
+<body>
+
+<!-- Ambient Background -->
+<div class="ambient-bg">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+</div>
+
+<div class="app-container">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">🎬</span>
+            <h1>Follow Please</h1>
+        </div>
+        <p class="subtitle">100+ ভিডিওতে text overlay বসাও — Canva-style live preview সহ</p>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-grid">
+
+        <!-- ═══ Sidebar — Config Panel ═══ -->
+        <aside class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">⚙️</span>
+                    <h2>Settings</h2>
+                </div>
+                <div class="card-body">
+
+                    <div class="config-group">
+                        <label class="config-label">Overlay Text</label>
+                        <input type="text" id="cfgText" class="config-input" value="Follow Please" placeholder="Follow Please">
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">⏱️ কখন দেখাবে (seconds)</label>
+                        <div class="config-row" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                            <div>
+                                <label class="config-label" style="font-size:10px; margin-bottom:4px;">Start</label>
+                                <input type="number" id="cfgStartTime" class="config-input" value="0" min="0" max="600" step="0.5">
+                            </div>
+                            <div>
+                                <label class="config-label" style="font-size:10px; margin-bottom:4px;">End</label>
+                                <input type="number" id="cfgEndTime" class="config-input" value="2.5" min="0.5" max="600" step="0.5">
+                            </div>
+                            <div>
+                                <label class="config-label" style="font-size:10px; margin-bottom:4px;">Fade</label>
+                                <input type="number" id="cfgFade" class="config-input" value="0.4" min="0" max="5" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Font Size — <span id="fontSizeVal">52</span>px</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="cfgFontSize" min="16" max="120" value="52">
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <div class="config-row">
+                            <div>
+                                <label class="config-label">Text Color</label>
+                                <div class="color-input-wrapper">
+                                    <input type="color" id="cfgTextColor" value="#ffffff">
+                                    <input type="text" class="color-hex" id="cfgTextColorHex" value="#ffffff" maxlength="7">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="config-label">Box Color</label>
+                                <div class="color-input-wrapper">
+                                    <input type="color" id="cfgBoxColor" value="#ffd700">
+                                    <input type="text" class="color-hex" id="cfgBoxColorHex" value="#ffd700" maxlength="7">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Box Opacity — <span id="opacityVal">86</span>%</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="cfgOpacity" min="0" max="100" value="86">
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Border Radius — <span id="radiusVal">12</span>px</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="cfgRadius" min="0" max="50" value="12">
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <div class="config-row">
+                            <div>
+                                <label class="config-label">Padding X</label>
+                                <input type="number" id="cfgPadX" class="config-input" value="30" min="0" max="100">
+                            </div>
+                            <div>
+                                <label class="config-label">Padding Y</label>
+                                <input type="number" id="cfgPadY" class="config-input" value="18" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="config-group">
+                        <label class="config-label">Workers — <span id="workersVal">4</span></label>
+                        <div class="range-wrapper">
+                            <input type="range" id="cfgWorkers" min="1" max="16" value="4">
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Encoder</label>
+                        <div class="toggle-switch">
+                            <span class="toggle-label">
+                                <span id="gpuLabel" class="badge gpu">⚡ GPU</span>
+                                <span id="gpuStatusText">VideoToolbox (Fast)</span>
+                            </span>
+                            <label class="switch">
+                                <input type="checkbox" id="cfgUseGpu" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ Main Content ═══ -->
+        <div class="content-area">
+
+            <!-- ─── Live Preview ─── -->
+            <div class="preview-section">
+                <div class="preview-header">
+                    <h2>👁️ Live Preview</h2>
+                    <span class="hint">🖱️ drag করে text move করো</span>
+                </div>
+                <div class="preview-canvas-wrap">
+                    <canvas id="previewCanvas" width="540" height="960"></canvas>
+                </div>
+                <!-- X/Y toolbar -->
+                <div class="preview-toolbar">
+                    <div class="coord-group">
+                        <span class="coord-label">X</span>
+                        <input type="range" class="coord-slider" id="sliderX" min="0" max="100" value="50">
+                        <span class="coord-value" id="valX">50%</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="coord-group">
+                        <span class="coord-label">Y</span>
+                        <input type="range" class="coord-slider" id="sliderY" min="0" max="100" value="50">
+                        <span class="coord-value" id="valY">50%</span>
+                    </div>
+                    <button class="load-frame-btn" id="btnCenterXY" onclick="centerXY()" title="Reset to center">⊹ Center</button>
+                    <button class="load-frame-btn" id="btnLoadFrame" onclick="toggleVideoSelect()" disabled>🎞️ Load Video Frame</button>
+                </div>
+                <!-- Video selector -->
+                <div class="video-thumb-list" id="videoThumbList"></div>
+            </div>
+
+            <!-- ─── Folder Selection ─── -->
+            <div class="folder-section">
+                <div class="folder-card">
+                    <div class="label">📂 Input Folder</div>
+                    <div class="folder-selector">
+                        <input type="text" id="inputDir" class="folder-path" placeholder="/path/to/your/videos">
+                        <button class="btn-browse" onclick="openBrowser('input')">Browse</button>
+                    </div>
+                </div>
+                <div class="folder-card">
+                    <div class="label">📁 Output Folder</div>
+                    <div class="folder-selector">
+                        <input type="text" id="outputDir" class="folder-path" placeholder="Auto: input/output/">
+                        <button class="btn-browse" onclick="openBrowser('output')">Browse</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <button class="btn-secondary" id="btnScan" onclick="scanVideos()">🔍 Scan Videos</button>
+                <button class="btn-primary" id="btnStart" onclick="startJob()" disabled>🚀 Start Processing</button>
+                <button class="btn-pause" id="btnPause" onclick="pauseJob()">⏸️ Pause</button>
+                <button class="btn-stop" id="btnStop" onclick="stopJob()">⏹️ Stop</button>
+                <span class="scan-info" id="scanInfo"></span>
+            </div>
+
+            <!-- Video List / Progress -->
+            <div class="card" id="videoListCard" style="display:none;">
+                <div class="card-header">
+                    <span class="icon">🎥</span>
+                    <h2>Videos</h2>
+                    <span class="preview-badge" id="videoBadge" style="margin-left:auto;">0 files</span>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div class="progress-section" id="progressSection">
+                        <div style="padding: 20px 20px 0;">
+                            <div class="progress-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value accent" id="statTotal">0</div>
+                                    <div class="stat-label">Total</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value success" id="statDone">0</div>
+                                    <div class="stat-label">Done</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value error" id="statFailed">0</div>
+                                    <div class="stat-label">Failed</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="statTime">0s</div>
+                                    <div class="stat-label">Elapsed</div>
+                                </div>
+                            </div>
+                            <div style="margin-top:16px;">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar active" id="progressBar"></div>
+                                </div>
+                                <div class="progress-text">
+                                    <span id="progressLabel">Processing...</span>
+                                    <span class="pct" id="progressPct">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-list" id="videoList"></div>
+                    <div class="completion-banner" id="completionBanner">
+                        <div class="emoji" id="completionEmoji">🎉</div>
+                        <h3 id="completionTitle">Processing Complete!</h3>
+                        <p id="completionText"></p>
+                        <div class="output-path" id="completionPath"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="emptyState" class="card">
+                <div class="empty-state">
+                    <div class="icon">📁</div>
+                    <h3>Select an input folder to start</h3>
+                    <p>Browse or type the folder path, then click "Scan Videos"</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- File Browser Modal -->
+<div class="modal-overlay" id="browserModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="browserTitle">📂 Select Folder</h3>
+            <button class="modal-close" onclick="closeBrowser()">✕</button>
+        </div>
+        <div class="modal-breadcrumb" id="browserBreadcrumb">/</div>
+        <div class="modal-body" id="browserBody"></div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeBrowser()">Cancel</button>
+            <button class="btn-primary" onclick="selectFolder()">✓ Select This Folder</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+//  State
+// ═══════════════════════════════════
+let xPercent = 50, yPercent = 50;
+let scannedVideos = [];
+let currentJobId = null;
+let pollInterval = null;
+let currentBrowserPath = '';
+let browserTarget = 'input';
+let bgImage = null;          // loaded background image for canvas
+let isDragging = false;
+let previewDebounce = null;
+
+// Canvas dimensions
+const CANVAS_W = 540;
+const CANVAS_H = 960;
+
+// ═══════════════════════════════════
+//  Init
+// ═══════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    setupListeners();
+    drawCanvas();
+});
+
+// ═══════════════════════════════════
+//  Config Listeners
+// ═══════════════════════════════════
+function setupListeners() {
+    // All config inputs trigger canvas redraw
+    const liveInputs = [
+        'cfgText', 'cfgFontSize', 'cfgTextColor', 'cfgTextColorHex',
+        'cfgBoxColor', 'cfgBoxColorHex', 'cfgOpacity', 'cfgRadius',
+        'cfgPadX', 'cfgPadY'
+    ];
+    liveInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => requestDraw());
+    });
+
+    // Slider labels
+    document.getElementById('cfgFontSize').addEventListener('input', e => {
+        document.getElementById('fontSizeVal').textContent = e.target.value;
+    });
+    document.getElementById('cfgOpacity').addEventListener('input', e => {
+        document.getElementById('opacityVal').textContent = e.target.value;
+    });
+    document.getElementById('cfgRadius').addEventListener('input', e => {
+        document.getElementById('radiusVal').textContent = e.target.value;
+    });
+    document.getElementById('cfgWorkers').addEventListener('input', e => {
+        document.getElementById('workersVal').textContent = e.target.value;
+    });
+
+    // Color sync
+    syncColor('cfgTextColor', 'cfgTextColorHex');
+    syncColor('cfgBoxColor', 'cfgBoxColorHex');
+
+    // X/Y sliders
+    document.getElementById('sliderX').addEventListener('input', e => {
+        xPercent = parseInt(e.target.value);
+        document.getElementById('valX').textContent = xPercent + '%';
+        requestDraw();
+    });
+    document.getElementById('sliderY').addEventListener('input', e => {
+        yPercent = parseInt(e.target.value);
+        document.getElementById('valY').textContent = yPercent + '%';
+        requestDraw();
+    });
+
+    // Canvas drag
+    const canvas = document.getElementById('previewCanvas');
+    canvas.addEventListener('mousedown', onDragStart);
+    canvas.addEventListener('mousemove', onDragMove);
+    canvas.addEventListener('mouseup', onDragEnd);
+    canvas.addEventListener('mouseleave', onDragEnd);
+    // Touch support
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onDragEnd);
+}
+
+function syncColor(pickerId, hexId) {
+    const picker = document.getElementById(pickerId);
+    const hex = document.getElementById(hexId);
+    picker.addEventListener('input', () => { hex.value = picker.value; requestDraw(); });
+    hex.addEventListener('input', () => {
+        if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) {
+            picker.value = hex.value;
+            requestDraw();
+        }
+    });
+}
+
+// ═══════════════════════════════════
+//  Canvas Drawing (Client-Side Live Preview)
+// ═══════════════════════════════════
+function requestDraw() {
+    if (previewDebounce) cancelAnimationFrame(previewDebounce);
+    previewDebounce = requestAnimationFrame(drawCanvas);
+}
+
+function drawCanvas() {
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = CANVAS_W;
+    canvas.height = CANVAS_H;
+
+    // 1) Background
+    if (bgImage) {
+        // Draw loaded video frame, scaled to fit
+        const scale = Math.max(CANVAS_W / bgImage.width, CANVAS_H / bgImage.height);
+        const sw = bgImage.width * scale;
+        const sh = bgImage.height * scale;
+        const sx = (CANVAS_W - sw) / 2;
+        const sy = (CANVAS_H - sh) / 2;
+        ctx.drawImage(bgImage, sx, sy, sw, sh);
+    } else {
+        // Demo gradient background
+        const grad = ctx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+        grad.addColorStop(0, '#0f0c29');
+        grad.addColorStop(0.5, '#302b63');
+        grad.addColorStop(1, '#24243e');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+        // Subtle grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < CANVAS_W; x += 30) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, CANVAS_H); ctx.stroke();
+        }
+        for (let y = 0; y < CANVAS_H; y += 30) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CANVAS_W, y); ctx.stroke();
+        }
+
+        // Crosshair
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(CANVAS_W / 2, 0); ctx.lineTo(CANVAS_W / 2, CANVAS_H);
+        ctx.moveTo(0, CANVAS_H / 2); ctx.lineTo(CANVAS_W, CANVAS_H / 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // "Demo" label
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.font = '600 14px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('DEMO BACKGROUND', CANVAS_W / 2, CANVAS_H - 20);
+    }
+
+    // 2) Read config
+    const text = document.getElementById('cfgText').value || 'Follow Please';
+    const fontSize = parseInt(document.getElementById('cfgFontSize').value) || 52;
+    const textColor = document.getElementById('cfgTextColor').value;
+    const boxColor = document.getElementById('cfgBoxColor').value;
+    const opacity = parseInt(document.getElementById('cfgOpacity').value) / 100;
+    const radius = parseInt(document.getElementById('cfgRadius').value) || 12;
+    const padX = parseInt(document.getElementById('cfgPadX').value) || 30;
+    const padY = parseInt(document.getElementById('cfgPadY').value) || 18;
+
+    // Scale font for canvas (preview is smaller than actual video)
+    const scaleFactor = CANVAS_W / 1080;
+    const scaledFont = Math.round(fontSize * scaleFactor);
+    const scaledPadX = Math.round(padX * scaleFactor);
+    const scaledPadY = Math.round(padY * scaleFactor);
+    const scaledRadius = Math.round(radius * scaleFactor);
+
+    // Measure text
+    ctx.font = `600 ${scaledFont}px Inter, Helvetica, sans-serif`;
+    ctx.textBaseline = 'top';
+    const metrics = ctx.measureText(text);
+    const textW = metrics.width;
+    const textH = scaledFont;  // approximate
+
+    // Box dimensions
+    const boxW = textW + scaledPadX * 2;
+    const boxH = textH + scaledPadY * 2;
+
+    // Position from X/Y percent
+    const maxX = Math.max(CANVAS_W - boxW, 0);
+    const maxY = Math.max(CANVAS_H - boxH, 0);
+    const boxX = maxX * xPercent / 100;
+    const boxY = maxY * yPercent / 100;
+
+    // Store for drag detection
+    canvas._overlayRect = { x: boxX, y: boxY, w: boxW, h: boxH };
+
+    // 3) Draw box
+    const r = parseInt(boxColor.substr(1, 2), 16);
+    const g = parseInt(boxColor.substr(3, 2), 16);
+    const b = parseInt(boxColor.substr(5, 2), 16);
+
+    ctx.fillStyle = `rgba(${r},${g},${b},${opacity})`;
+    roundRect(ctx, boxX, boxY, boxW, boxH, scaledRadius);
+    ctx.fill();
+
+    // 4) Draw text
+    ctx.fillStyle = textColor;
+    ctx.font = `600 ${scaledFont}px Inter, Helvetica, sans-serif`;
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    ctx.fillText(text, boxX + scaledPadX, boxY + scaledPadY);
+
+    // 5) Position indicator lines
+    ctx.strokeStyle = 'rgba(255,215,0,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    const cx = boxX + boxW / 2;
+    const cy = boxY + boxH / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, 0); ctx.lineTo(cx, CANVAS_H);
+    ctx.moveTo(0, cy); ctx.lineTo(CANVAS_W, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+// ═══════════════════════════════════
+//  Canvas Dragging
+// ═══════════════════════════════════
+function onDragStart(e) {
+    const canvas = document.getElementById('previewCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CANVAS_W / rect.width;
+    const scaleY = CANVAS_H / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    const r = canvas._overlayRect;
+    if (r && mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) {
+        isDragging = true;
+        canvas._dragOffset = { x: mx - r.x, y: my - r.y };
+    }
+}
+
+function onDragMove(e) {
+    if (!isDragging) return;
+    const canvas = document.getElementById('previewCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CANVAS_W / rect.width;
+    const scaleY = CANVAS_H / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    const r = canvas._overlayRect;
+    if (!r) return;
+
+    const maxX = Math.max(CANVAS_W - r.w, 1);
+    const maxY = Math.max(CANVAS_H - r.h, 1);
+
+    let newX = mx - canvas._dragOffset.x;
+    let newY = my - canvas._dragOffset.y;
+    newX = Math.max(0, Math.min(newX, maxX));
+    newY = Math.max(0, Math.min(newY, maxY));
+
+    xPercent = Math.round(newX / maxX * 100);
+    yPercent = Math.round(newY / maxY * 100);
+
+    document.getElementById('sliderX').value = xPercent;
+    document.getElementById('sliderY').value = yPercent;
+    document.getElementById('valX').textContent = xPercent + '%';
+    document.getElementById('valY').textContent = yPercent + '%';
+
+    requestDraw();
+}
+
+function onDragEnd() { isDragging = false; }
+
+function onTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    onDragStart({ clientX: touch.clientX, clientY: touch.clientY });
+}
+function onTouchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    onDragMove({ clientX: touch.clientX, clientY: touch.clientY });
+}
+
+function centerXY() {
+    xPercent = 50; yPercent = 50;
+    document.getElementById('sliderX').value = 50;
+    document.getElementById('sliderY').value = 50;
+    document.getElementById('valX').textContent = '50%';
+    document.getElementById('valY').textContent = '50%';
+    requestDraw();
+}
+
+// ═══════════════════════════════════
+//  Load Video Frame as Background
+// ═══════════════════════════════════
+function toggleVideoSelect() {
+    const list = document.getElementById('videoThumbList');
+    list.classList.toggle('active');
+}
+
+async function loadVideoFrame(videoPath, btnEl) {
+    if (btnEl) {
+        document.querySelectorAll('.video-thumb-item').forEach(el => el.classList.remove('active'));
+        btnEl.classList.add('active');
+    }
+
+    try {
+        const resp = await fetch('/api/preview-frame', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ video_path: videoPath }),
+        });
+        const data = await resp.json();
+        if (data.error) { console.error(data.error); return; }
+
+        // Load image
+        const img = new window.Image();
+        img.onload = () => {
+            bgImage = img;
+            requestDraw();
+        };
+        img.src = 'data:image/jpeg;base64,' + data.frame;
+
+    } catch (err) {
+        console.error('Load frame error:', err);
+    }
+}
+
+// ═══════════════════════════════════
+//  File Browser
+// ═══════════════════════════════════
+function openBrowser(target) {
+    browserTarget = target;
+    document.getElementById('browserTitle').textContent =
+        target === 'input' ? '📂 Select Input Folder' : '📁 Select Output Folder';
+    const currentPath = target === 'input'
+        ? document.getElementById('inputDir').value
+        : document.getElementById('outputDir').value;
+    browseTo(currentPath || '');
+    document.getElementById('browserModal').classList.add('active');
+}
+function closeBrowser() {
+    document.getElementById('browserModal').classList.remove('active');
+}
+async function browseTo(path) {
+    try {
+        const resp = await fetch('/api/browse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: path || undefined }),
+        });
+        const data = await resp.json();
+        currentBrowserPath = data.current;
+        document.getElementById('browserBreadcrumb').textContent = data.current;
+        const body = document.getElementById('browserBody');
+        body.innerHTML = '';
+        if (data.parent && data.parent !== data.current) {
+            const p = document.createElement('div');
+            p.className = 'browser-item parent-dir';
+            p.innerHTML = '<span class="file-icon">⬆️</span><span class="file-name">.. (Parent)</span>';
+            p.onclick = () => browseTo(data.parent);
+            body.appendChild(p);
+        }
+        for (const item of data.items) {
+            const el = document.createElement('div');
+            el.className = `browser-item ${item.is_dir ? 'is-dir' : ''}`;
+            el.innerHTML = `
+                <span class="file-icon">${item.is_dir ? '📁' : '📄'}</span>
+                <span class="file-name">${esc(item.name)}</span>
+                <span class="file-size">${item.is_dir ? '' : fmtSize(item.size||0)}</span>`;
+            if (item.is_dir) el.onclick = () => browseTo(item.path);
+            body.appendChild(el);
+        }
+        if (!data.items.length) {
+            body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Empty</div>';
+        }
+    } catch (err) { console.error(err); }
+}
+function selectFolder() {
+    document.getElementById(browserTarget === 'input' ? 'inputDir' : 'outputDir').value = currentBrowserPath;
+    closeBrowser();
+}
+
+// ═══════════════════════════════════
+//  Scan & Process
+// ═══════════════════════════════════
+async function scanVideos() {
+    const inputDir = document.getElementById('inputDir').value.trim();
+    if (!inputDir) { alert('Input folder দাও!'); return; }
+    const btn = document.getElementById('btnScan');
+    btn.disabled = true; btn.textContent = '🔄 Scanning...';
+    try {
+        const resp = await fetch('/api/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input_dir: inputDir }),
+        });
+        const data = await resp.json();
+        if (data.error) { alert(data.error); return; }
+        scannedVideos = data.videos;
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('videoListCard').style.display = 'block';
+        document.getElementById('videoBadge').textContent = data.count + ' files';
+        document.getElementById('scanInfo').innerHTML =
+            `<span class="count">${data.count}</span> videos found`;
+        renderVideoList(data.videos.map(v => ({ ...v, status: 'pending' })));
+        document.getElementById('btnStart').disabled = data.count === 0;
+        document.getElementById('progressSection').classList.remove('active');
+        document.getElementById('completionBanner').classList.remove('active');
+
+        // Enable "Load Video Frame" + populate video selector
+        document.getElementById('btnLoadFrame').disabled = data.count === 0;
+        const thumbList = document.getElementById('videoThumbList');
+        thumbList.innerHTML = '';
+        data.videos.slice(0, 20).forEach((v, i) => {
+            const el = document.createElement('div');
+            el.className = 'video-thumb-item';
+            el.innerHTML = `<span class="vt-icon">🎬</span>${esc(v.name)}`;
+            el.onclick = () => loadVideoFrame(v.path, el);
+            thumbList.appendChild(el);
+        });
+    } catch (err) { alert('Scan failed: ' + err.message); }
+    finally { btn.disabled = false; btn.textContent = '🔍 Scan Videos'; }
+}
+
+function renderVideoList(videos) {
+    const list = document.getElementById('videoList');
+    list.innerHTML = '';
+    for (const v of videos) {
+        const el = document.createElement('div');
+        el.className = 'video-item';
+        el.innerHTML = `
+            <div class="video-status-icon ${v.status}">${statusIcon(v.status)}</div>
+            <div class="video-info">
+                <div class="video-name">${esc(v.name)}</div>
+                <div class="video-meta">${videoMeta(v)}</div>
+            </div>
+            <div class="video-time">${v.time ? v.time + 's' : ''}</div>`;
+        list.appendChild(el);
+    }
+}
+
+async function startJob() {
+    const inputDir = document.getElementById('inputDir').value.trim();
+    const outputDir = document.getElementById('outputDir').value.trim();
+    if (!inputDir) { alert('Input folder দাও!'); return; }
+    const config = getConfig();
+    const btn = document.getElementById('btnStart');
+    btn.disabled = true; btn.textContent = '⏳ Starting...';
+    document.getElementById('btnScan').disabled = true;
+    try {
+        const resp = await fetch('/api/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input_dir: inputDir, output_dir: outputDir || undefined, config }),
+        });
+        const data = await resp.json();
+        if (data.error) {
+            alert(data.error);
+            btn.disabled = false; btn.textContent = '🚀 Start Processing';
+            document.getElementById('btnScan').disabled = false;
+            return;
+        }
+        currentJobId = data.job_id;
+        document.getElementById('progressSection').classList.add('active');
+        document.getElementById('statTotal').textContent = data.total;
+        document.getElementById('completionBanner').classList.remove('active');
+        btn.textContent = '🔄 Processing...';
+        // Show pause/stop buttons
+        document.getElementById('btnPause').classList.add('active');
+        document.getElementById('btnStop').classList.add('active');
+        startPolling();
+    } catch (err) {
+        alert('Failed: ' + err.message);
+        btn.disabled = false; btn.textContent = '🚀 Start Processing';
+        document.getElementById('btnScan').disabled = false;
+    }
+}
+
+function getConfig() {
+    return {
+        text: document.getElementById('cfgText').value || 'Follow Please',
+        start_time: parseFloat(document.getElementById('cfgStartTime').value) || 0,
+        end_time: parseFloat(document.getElementById('cfgEndTime').value) || 2.5,
+        fade: parseFloat(document.getElementById('cfgFade').value) || 0.4,
+        fontsize: parseInt(document.getElementById('cfgFontSize').value) || 52,
+        workers: parseInt(document.getElementById('cfgWorkers').value) || 4,
+        text_color: document.getElementById('cfgTextColor').value,
+        box_color: document.getElementById('cfgBoxColor').value,
+        box_opacity: parseInt(document.getElementById('cfgOpacity').value) / 100,
+        x_percent: xPercent,
+        y_percent: yPercent,
+        padding_x: parseInt(document.getElementById('cfgPadX').value) || 30,
+        padding_y: parseInt(document.getElementById('cfgPadY').value) || 18,
+        border_radius: parseInt(document.getElementById('cfgRadius').value) || 12,
+        use_gpu: document.getElementById('cfgUseGpu').checked,
+    };
+}
+
+// GPU toggle label update
+document.getElementById('cfgUseGpu').addEventListener('change', function() {
+    const label = document.getElementById('gpuLabel');
+    const text = document.getElementById('gpuStatusText');
+    if (this.checked) {
+        label.className = 'badge gpu';
+        label.textContent = '⚡ GPU';
+        text.textContent = 'VideoToolbox (Fast)';
+    } else {
+        label.className = 'badge cpu';
+        label.textContent = '🔧 CPU';
+        text.textContent = 'libx264 (Quality)';
+    }
+});
+
+// ═══════════════════════════════════
+//  Polling
+// ═══════════════════════════════════
+function startPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(pollStatus, 800);
+}
+async function pollStatus() {
+    if (!currentJobId) return;
+    try {
+        const resp = await fetch(`/api/status/${currentJobId}`);
+        const data = await resp.json();
+        document.getElementById('progressBar').style.width = data.progress + '%';
+        document.getElementById('progressPct').textContent = data.progress + '%';
+        document.getElementById('statDone').textContent = data.success_count || 0;
+        document.getElementById('statFailed').textContent = data.error_count || 0;
+        document.getElementById('statTime').textContent = fmtTime(data.elapsed || 0);
+        document.getElementById('progressLabel').textContent =
+            data.paused ? '⏸️ Paused' : `${data.completed||0} / ${data.total||0} videos processed`;
+
+        // Update pause button state
+        const pauseBtn = document.getElementById('btnPause');
+        if (data.paused) {
+            pauseBtn.textContent = '▶️ Resume';
+            pauseBtn.className = 'btn-pause active resumed';
+            document.getElementById('progressBar').classList.remove('active');
+        } else if (data.status === 'running') {
+            pauseBtn.textContent = '⏸️ Pause';
+            pauseBtn.className = 'btn-pause active';
+            document.getElementById('progressBar').classList.add('active');
+        }
+
+        if (data.videos) renderVideoList(data.videos);
+
+        if (data.status === 'completed' || data.status === 'stopped') {
+            clearInterval(pollInterval); pollInterval = null;
+            document.getElementById('progressBar').classList.remove('active');
+            document.getElementById('btnPause').classList.remove('active');
+            document.getElementById('btnStop').classList.remove('active');
+            const banner = document.getElementById('completionBanner');
+            banner.classList.add('active');
+
+            if (data.status === 'stopped') {
+                banner.className = 'completion-banner active has-errors';
+                document.getElementById('completionEmoji').textContent = '🛑';
+                document.getElementById('completionTitle').textContent = 'Processing বন্ধ করা হয়েছে';
+                document.getElementById('completionText').textContent =
+                    `${data.success_count} সফল, ${data.cancelled_count||0} বাদ — ${fmtTime(data.elapsed)}`;
+            } else if (data.error_count > 0) {
+                banner.className = 'completion-banner active has-errors';
+                document.getElementById('completionEmoji').textContent = '⚠️';
+                document.getElementById('completionTitle').textContent = 'Done (with errors)';
+                document.getElementById('completionText').textContent =
+                    `${data.success_count} সফল, ${data.error_count} ব্যর্থ — ${fmtTime(data.elapsed)}`;
+            } else {
+                banner.className = 'completion-banner active success';
+                document.getElementById('completionEmoji').textContent = '🎉';
+                document.getElementById('completionTitle').textContent = 'সব ভিডিও সফল!';
+                document.getElementById('completionText').textContent =
+                    `${data.success_count} videos — ${fmtTime(data.elapsed)}`;
+            }
+            document.getElementById('completionPath').textContent = data.output_dir;
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStart').textContent = '🚀 Start Processing';
+            document.getElementById('btnScan').disabled = false;
+        }
+    } catch (err) { console.error(err); }
+}
+
+// ═══════════════════════════════════
+//  Pause / Stop
+// ═══════════════════════════════════
+async function pauseJob() {
+    if (!currentJobId) return;
+    try {
+        await fetch(`/api/pause/${currentJobId}`, { method: 'POST' });
+    } catch (err) { console.error(err); }
+}
+
+async function stopJob() {
+    if (!currentJobId) return;
+    if (!confirm('সত্যিই বন্ধ করতে চাও? যে video গুলো already done সেগুলো থাকবে।')) return;
+    try {
+        await fetch(`/api/stop/${currentJobId}`, { method: 'POST' });
+    } catch (err) { console.error(err); }
+}
+
+// ═══════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════
+function statusIcon(s) {
+    return { pending: '⏳', processing: '⚙️', done: '✅', error: '❌', cancelled: '🚫' }[s] || '○';
+}
+function videoMeta(v) {
+    if (v.status === 'cancelled') return '<span style="color:var(--text-muted)">Cancelled</span>';
+    if (v.status === 'error' && v.error) return `<span class="error-text">${esc(v.error.substring(0,80))}</span>`;
+    if (v.status === 'done' && v.output_size) return fmtSize(v.output_size);
+    if (v.status === 'processing') return 'Processing...';
+    return fmtSize(v.size || 0);
+}
+function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+    return (b/1073741824).toFixed(2) + ' GB';
+}
+function fmtTime(s) {
+    if (s < 60) return Math.round(s) + 's';
+    return Math.floor(s/60) + 'm ' + Math.round(s%60) + 's';
+}
+function esc(str) {
+    const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+}
+</script>
+
+</body>
+</html>

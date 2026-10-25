@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Document</title>
+      <link
+         rel="stylesheet"
+         href="https://29101afcd41198dafcdd8b88cbac692a.cdn.bubble.io/f1755712719746x849853875261634300/phn.css"
+      />
+      <style>
+         body {
+            background: #2b2b2b;
+            color: #fff;
+            font-family: "Montserrat", Arial, sans-serif;
+            padding: 20px;
+         }
+         .fvinp_check {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px 20px;
+            margin-top: 10px;
+         }
+         .fvinp_check_item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+         }
+         .fvinp_check_item input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+            margin: 0;
+            border: 2px solid #8a8a8a;
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+         }
+         .fvinp_check_item input[type="checkbox"]:hover {
+            border-color: #fff;
+         }
+         .fvinp_check_item input[type="checkbox"]:checked {
+            background: #fff;
+            border-color: #fff;
+         }
+         .fvinp_check_item input[type="checkbox"]:checked::after {
+            content: "";
+            position: absolute;
+            left: 10px;
+            top: 4px;
+            width: 8px;
+            height: 15px;
+            border: solid #000;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+         }
+         .fvinp_check_item label {
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #fff;
+         }
+      </style>
+      <link rel="stylesheet" href="http://127.0.0.1:8080/api.css" />
+   </head>
+   <body>
+      <div class="fvinput_grp">
+         <form novalidate>
+            <div class="fvinp_form_main">
+               <div class="fvinp_block">
+                  <label class="fvinplebel">First Name</label>
+                  <input id="fvfirstname" type="text" />
+               </div>
+               <div class="fvinp_block">
+                  <label class="fvinplebel">Last Name</label>
+                  <input id="fvlastname" type="text" />
+               </div>
+               <div class="fvinp_block">
+                  <label class="fvinplebel">Email</label>
+                  <input id="fvemail" type="email" />
+               </div>
+               <div class="fvinp_block">
+                  <label class="fvinplebel">Phone</label>
+                  <input required id="jvphone" name="phone" type="text" />
+               </div>
+               <div class="fvinp_block">
+                  <label class="fvinplebel"
+                     >Estimated Annual Private Flight Hours</label
+                  >
+                  <input id="fvhours" type="text" />
+               </div>
+               <div class="fvinp_block">
+                  <label class="fvinplebel">Primary Aircraft Category</label>
+                  <select>
+                     <option value="Turboprop">Turboprop</option>
+                     <option value="Light">Light</option>
+                     <option value="Midsize">Midsize</option>
+                     <option value="Super-Midsize">Super-Midsize</option>
+                     <option value="Heavy">Heavy</option>
+                  </select>
+               </div>
+               <div class="fvinp_block">
+                  <label class="fvinplebel">Current Aviation Solution</label>
+                  <div class="fvinp_check">
+                     <div class="fvinp_check_item">
+                        <input type="checkbox" id="chk1" checked />
+                        <label for="chk1">On-Demand Charter</label>
+                     </div>
+                     <div class="fvinp_check_item">
+                        <input type="checkbox" id="chk2" />
+                        <label for="chk2">Jet Card</label>
+                     </div>
+                     <div class="fvinp_check_item">
+                        <input type="checkbox" id="chk3" />
+                        <label for="chk3">Fractional Ownership</label>
+                     </div>
+                     <div class="fvinp_check_item">
+                        <input type="checkbox" id="chk5" />
+                        <label for="chk5">Commercial Aviation</label>
+                     </div>
+                     <div class="fvinp_check_item">
+                        <input type="checkbox" id="chk6" />
+                        <label for="chk6">Other</label>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="jv_form_submit">
+               <button
+                  data-wf--button--variant="fill_button"
+                  class="button w-variant-89ad537b-624c-eb16-bbfb-d64d69c3cbc2 full-width w-button"
+               >
+                  Find My FLYT
+               </button>
+            </div>
+         </form>
+      </div>
+
+      <script src="https://29101afcd41198dafcdd8b88cbac692a.cdn.bubble.io/f1755712780764x618132097773047300/utils.js"></script>
+
+      <script src="https://29101afcd41198dafcdd8b88cbac692a.cdn.bubble.io/f1755712737202x523600794765929600/phn.js"></script>
+
+      <script>
+         var input = document.querySelector("#jvphone");
+         window.iti = window.intlTelInput(input, {
+            utilsScript:
+               "https://29101afcd41198dafcdd8b88cbac692a.cdn.bubble.io/f1754868069986x904074362622997900/utils.js",
+         });
+      </script>
+      <script src="app.js"></script>
+   </body>
+</html>

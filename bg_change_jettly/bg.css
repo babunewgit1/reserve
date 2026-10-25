@@ -1,0 +1,87 @@
+@media (min-width: 992px) {
+   .aircraft_bg_icon.airplane {
+      background-image:
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6aafa698bea9dd8db51b1228_white_bg.png"),
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6aafa59409bc9f37280fbd12_dd06a7edbcdfa20d2370dc24f50fecf6_airplan.png");
+      background-repeat: repeat;
+      background-size: auto, 150px;
+   }
+
+   .aircraft_bg_icon.helicopter {
+      background-image:
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6aafa698bea9dd8db51b1228_white_bg.png"),
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab0fbe596aae73770a1bbef_hly.png");
+      background-repeat: repeat;
+      background-size: auto, 150px;
+   }
+
+   .aircraft_bg_icon.group {
+      background-image:
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6aafa698bea9dd8db51b1228_white_bg.png"),
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab0fc834e2e6dc673d44723_group_ch.png");
+      background-repeat: repeat;
+      background-size: auto, 150px;
+   }
+
+   .aircraft_bg_icon.cargo {
+      background-image:
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6aafa698bea9dd8db51b1228_white_bg.png"),
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab0fcb7777dbae420cb6128_cg.png");
+      background-repeat: repeat;
+      background-size: auto, 150px;
+   }
+
+   .aircraft_bg_icon.medevac {
+      background-image:
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6aafa698bea9dd8db51b1228_white_bg.png"),
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab0fce16a48da7cc0c24530_mavic.png");
+      background-repeat: repeat;
+      background-size: auto, 150px;
+   }
+
+   .aircraft_bg_icon.vip {
+      background-image:
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6aafa698bea9dd8db51b1228_white_bg.png"),
+         url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab0fd116a48da7cc0c2613f_vip.png");
+      background-repeat: repeat;
+      background-size: auto, 150px;
+   }
+}
+
+@media (min-width: 1440px) {
+   .aircraft_bg_icon .sr_exp_left:after {
+      content: "";
+      display: block;
+      width: 400px;
+      height: 100%;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background-repeat: no-repeat;
+      background-size: 100%;
+   }
+
+   .aircraft_bg_icon.airplane .sr_exp_left:after {
+      background-image: url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab24f596edd63c38ddbcf3d_Airliner.png");
+   }
+
+   .aircraft_bg_icon.helicopter .sr_exp_left:after {
+      background-image: url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab24f5901a4c296ac149c54_Helicopter.png");
+   }
+
+   .aircraft_bg_icon.group .sr_exp_left:after {
+      background-image: url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab24f586edd63c38ddbcead_Group%20Charter.png");
+   }
+
+   .aircraft_bg_icon.cargo .sr_exp_left:after {
+      background-image: url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab24f5a5776f53e514c55e0_Cargo.png");
+   }
+
+   .aircraft_bg_icon.medevac .sr_exp_left:after {
+      background-image: url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab24f5bc3aeb18777409f77_Medevac.png");
+   }
+
+   .aircraft_bg_icon.vip .sr_exp_left:after {
+      background-image: url("https://cdn.prod.website-files.com/6713759f858863c516dbaa19/6ab24f59086efa3872f69aa3_VIP%20Airliner.png");
+   }
+}

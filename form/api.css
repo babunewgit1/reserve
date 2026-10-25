@@ -1,0 +1,188 @@
+.fv_booking_right {
+   border-radius: 10px;
+   border: 1px solid rgba(255, 255, 255, 0.3);
+   background: rgba(255, 255, 255, 0.05);
+   padding: 50px;
+}
+
+.fvinput_grp {
+   margin-top: 35px;
+}
+
+.fvinp_form_main {
+   display: grid;
+   grid-template-columns: repeat(2, 1fr);
+   gap: 20px;
+}
+
+.fvinplebel {
+   display: block;
+   color: #fff;
+   font-size: 16px;
+   font-style: normal;
+   font-weight: 400;
+   line-height: 22px;
+}
+
+.fvinp_block input,
+.fvinp_block select {
+   display: block;
+   width: 100%;
+   border-radius: 10px;
+   border: 1px solid #b9b9b9;
+   background: rgba(255, 255, 255, 0);
+   outline: none;
+   height: 50px;
+   padding: 10px;
+   color: #fff;
+}
+
+.fvinp_block select {
+   cursor: pointer;
+}
+
+.fvinp_block .iti {
+   display: block;
+   width: 100%;
+}
+
+.fvinp_block .iti input[type="text"],
+.fvinp_block .iti input[type="tel"] {
+   width: 100%;
+}
+
+.iti__country-list {
+   color: #1e1e1e;
+}
+
+.fvinp_block .iti__flag-container {
+   width: 100%;
+   pointer-events: none;
+}
+
+.fvinp_block .iti__selected-flag,
+.fvinp_block .iti__country-list {
+   pointer-events: auto;
+}
+
+.fvinp_block .iti__selected-flag {
+   width: 52px;
+   cursor: pointer;
+}
+
+.fvinp_block .iti input#phone {
+   cursor: text;
+}
+
+.fvinp_block .iti__country-list {
+   top: 100%;
+   left: 0;
+   width: 100%;
+   margin: 4px 0 0;
+   white-space: normal;
+   box-sizing: border-box;
+}
+.fvinp_block:last-child {
+   grid-column: 1 / -1;
+}
+
+.fvinp_check {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: 16px 20px;
+   margin-top: 10px;
+}
+.fvinp_check_item {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+}
+.fvinp_check_item input[type="checkbox"] {
+   appearance: none;
+   -webkit-appearance: none;
+   width: 20px;
+   height: 20px;
+   flex-shrink: 0;
+   margin: 0;
+   border: 2px solid #8a8a8a;
+   border-radius: 4px;
+   background: transparent;
+   cursor: pointer;
+   position: relative;
+   transition: all 0.2s ease;
+}
+.fvinp_check_item input[type="checkbox"]:hover {
+   border-color: #fff;
+}
+.fvinp_check_item input[type="checkbox"]:checked {
+   background: #fff;
+   border-color: #fff;
+}
+.fvinp_check_item input[type="checkbox"]:checked::after {
+   content: "";
+   position: absolute;
+   left: 5px;
+   top: -1px;
+   width: 8px;
+   height: 15px;
+   border: solid #000;
+   border-width: 0 3px 3px 0;
+   transform: rotate(45deg);
+}
+.fvinp_check_item label {
+   font-size: 15px;
+   font-weight: 400;
+   cursor: pointer;
+   color: #e5e7e9;
+   margin-bottom: 0;
+}
+
+.jv_form_submit {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   margin-top: 40px;
+}
+
+.jv_form_submit button {
+   background-color: #fff;
+   color: #1e1e1e;
+   border-color: #fff;
+}
+
+.jv_form_submit button:hover {
+   background-color: #fff;
+   color: #1e1e1e;
+   border-color: #fff;
+}
+
+@media (max-width: 1200px) {
+   .fv_booking_right {
+      padding: 20px;
+   }
+
+   .fvinp_form_main {
+      gap: 10px;
+   }
+
+   .fvinput_grp {
+      margin-top: 20px;
+   }
+}
+
+@media (max-width: 577px) {
+   .fvinp_form_main {
+      grid-template-columns: 1fr;
+      gap: 20px;
+   }
+
+   .fvj_left_bar {
+      width: 330px;
+      margin-left: auto;
+      margin-right: auto;
+   }
+
+   .fvinp_check {
+      grid-template-columns: repeat(2, 1fr);
+   }
+}

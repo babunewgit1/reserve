@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Menu — Desktop vs Mobile — Final Mismatch Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        h1 { font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 8px; background: linear-gradient(135deg, #ff5d47, #ff9a44); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 40px; font-size: 0.95rem; }
+        .result-banner { background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04)); border: 1px solid rgba(239,68,68,0.3); border-radius: 16px; padding: 28px 32px; text-align: center; margin-bottom: 40px; }
+        .result-banner .icon { font-size: 3rem; margin-bottom: 12px; }
+        .result-banner h2 { color: #ef4444; font-size: 1.4rem; margin-bottom: 8px; }
+        .result-banner p { color: #9ca3af; font-size: 0.9rem; line-height: 1.6; }
+        .stats-bar { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+        .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 28px; text-align: center; min-width: 140px; }
+        .stat-card .num { font-size: 1.8rem; font-weight: 800; color: #ff5d47; }
+        .stat-card .label { font-size: 0.75rem; color: #888; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .stat-card.green .num { color: #22c55e; }
+        .stat-card.red .num { color: #ef4444; }
+        .method-note { background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 40px; font-size: 0.85rem; color: #93c5fd; line-height: 1.6; }
+        .method-note strong { color: #60a5fa; }
+
+        .mismatch-card { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 14px; margin-bottom: 20px; overflow: hidden; }
+        .mismatch-card-header { padding: 18px 24px; background: rgba(239,68,68,0.08); border-bottom: 1px solid rgba(239,68,68,0.12); display: flex; align-items: center; gap: 14px; }
+        .mismatch-num { background: #ef4444; color: #fff; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+        .mismatch-card-header h3 { font-size: 1rem; font-weight: 700; color: #fca5a5; }
+        .mismatch-card-header .menu-tag { background: rgba(255,255,255,0.08); color: #888; padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin-left: auto; }
+        .mismatch-card-body { padding: 20px 24px; }
+        .mismatch-type { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
+        .type-header { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .type-description { background: rgba(251,146,60,0.15); color: #fb923c; }
+        .location-text { color: #888; font-size: 0.82rem; margin-bottom: 4px; }
+
+        .compare-box { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+        .compare-side { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 16px; border: 1px solid rgba(255,255,255,0.06); }
+        .compare-side .side-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .compare-side.desktop .side-label { color: #60a5fa; }
+        .compare-side.mobile .side-label { color: #a78bfa; }
+        .compare-side .side-text { font-size: 0.95rem; color: #e0e0e0; line-height: 1.5; }
+        .highlight-word { background: rgba(239,68,68,0.25); color: #fca5a5; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+        .match-section { background: rgba(34,197,94,0.04); border: 1px solid rgba(34,197,94,0.12); border-radius: 14px; padding: 24px; margin-top: 40px; margin-bottom: 24px; }
+        .match-section h2 { color: #22c55e; font-size: 1.1rem; margin-bottom: 16px; }
+        .match-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+        .match-item { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.1); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+        .match-item .menu-name { font-weight: 600; color: #d4d4d4; font-size: 0.9rem; }
+        .match-item .match-count { color: #22c55e; font-size: 0.75rem; font-weight: 600; }
+        .note { text-align: center; color: #555; font-size: 0.78rem; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.06); }
+        @media (max-width: 640px) { .compare-box { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mega Menu — Final Mismatch Report</h1>
+        <p class="subtitle">Desktop vs Mobile — Automated + Manual Check (text case ignored)</p>
+
+        <div class="stats-bar">
+            <div class="stat-card"><div class="num">6</div><div class="label">Menus Checked</div></div>
+            <div class="stat-card green"><div class="num">91</div><div class="label">Items & Links ✓</div></div>
+            <div class="stat-card red"><div class="num">4</div><div class="label">Mismatches</div></div>
+        </div>
+
+        <div class="method-note">
+            <strong>🔍 Verification Method:</strong> Node.js script (<code>check.js</code>) + <code>grep</code> + manual review ব্যবহার করে <code>desktop.html</code> ফাইলের মধ্যে <code>megamenu-desktop</code> ও <code>mobile-version</code> sections আলাদা করে compare করা হয়েছে। Text case সম্পূর্ণ ignore করা হয়েছে। শুধু actual word/content পার্থক্য report করা হয়েছে।
+        </div>
+
+        <div class="result-banner">
+            <div class="icon">⚠️</div>
+            <h2>৪টি Mismatch পাওয়া গেছে</h2>
+            <p>১টি Section Header + ৩টি Description Text — সব verified by automated script + grep।<br>
+            সব Menu Items (91টি) ও তাদের Links ১০০% match।</p>
+        </div>
+
+        <!-- MISMATCH 1 -->
+        <div class="mismatch-card">
+            <div class="mismatch-card-header">
+                <div class="mismatch-num">1</div>
+                <h3>Section Header — ভিন্ন শব্দ</h3>
+                <span class="menu-tag">Enterprise</span>
+            </div>
+            <div class="mismatch-card-body">
+                <span class="mismatch-type type-header">Section Header</span>
+                <p class="location-text">Enterprise → ২য় column header (<code>megamenu-column-header</code> vs <code>mega-menu-title</code>)</p>
+                <div class="compare-box">
+                    <div class="compare-side desktop">
+                        <div class="side-label">🖥 Desktop</div>
+                        <div class="side-text"><span class="highlight-word">Institutions</span></div>
+                    </div>
+                    <div class="compare-side mobile">
+                        <div class="side-label">📱 Mobile</div>
+                        <div class="side-text"><span class="highlight-word">INDUSTRIES</span></div>
+                    </div>
+                </div>
+                <p style="color:#888; font-size:0.82rem; margin-top:12px;">
+                    ✅ Verified by: <code>grep -i "institutions\|industries" desktop.html | grep "column-header\|mega-menu-title"</code><br>
+                    সম্পূর্ণ আলাদা শব্দ। নিচে একই ৫টি items ও links আছে।
+                </p>
+            </div>
+        </div>
+
+        <!-- MISMATCH 2 -->
+        <div class="mismatch-card">
+            <div class="mismatch-card-header">
+                <div class="mismatch-num">2</div>
+                <h3>Description — ভিন্ন শব্দ</h3>
+                <span class="menu-tag">Operators</span>
+            </div>
+            <div class="mismatch-card-body">
+                <span class="mismatch-type type-description">Description Text</span>
+                <p class="location-text">Operators → Dropdown description (<code>paragraph-3</code>)</p>
+                <div class="compare-box">
+                    <div class="compare-side desktop">
+                        <div class="side-label">🖥 Desktop</div>
+                        <div class="side-text">Partner with Jettly to list aircraft, manage availability, and monetize <span class="highlight-word">jet</span> capacity globally.</div>
+                    </div>
+                    <div class="compare-side mobile">
+                        <div class="side-label">📱 Mobile</div>
+                        <div class="side-text">Partner with Jettly to list aircraft, manage availability, and monetize <span class="highlight-word">fleet</span> capacity globally.</div>
+                    </div>
+                </div>
+                <p style="color:#888; font-size:0.82rem; margin-top:12px;">
+                    ✅ Verified by: <code>grep -i "monetize" desktop.html</code> → ২টি আলাদা result<br>
+                    "jet" vs "fleet" — সম্পূর্ণ আলাদা শব্দ।
+                </p>
+            </div>
+        </div>
+
+        <!-- MISMATCH 3 -->
+        <div class="mismatch-card">
+            <div class="mismatch-card-header">
+                <div class="mismatch-num">3</div>
+                <h3>Description — Singular vs Plural</h3>
+                <span class="menu-tag">Resources</span>
+            </div>
+            <div class="mismatch-card-body">
+                <span class="mismatch-type type-description">Description Text</span>
+                <p class="location-text">Resources → Dropdown description (<code>paragraph-3</code>)</p>
+                <div class="compare-box">
+                    <div class="compare-side desktop">
+                        <div class="side-label">🖥 Desktop</div>
+                        <div class="side-text">Insights, <span class="highlight-word">guides</span>, airport directories, and aviation tools to support smarter private flying.</div>
+                    </div>
+                    <div class="compare-side mobile">
+                        <div class="side-label">📱 Mobile</div>
+                        <div class="side-text">Insights, <span class="highlight-word">guide</span>, airport directories, and aviation tools to support smarter private flying.</div>
+                    </div>
+                </div>
+                <p style="color:#888; font-size:0.82rem; margin-top:12px;">
+                    ✅ Verified by: automated script (Section 3: Description Texts)<br>
+                    "guides" (plural) vs "guide" (singular)।
+                </p>
+            </div>
+        </div>
+
+        <!-- MISMATCH 4 -->
+        <div class="mismatch-card">
+            <div class="mismatch-card-header">
+                <div class="mismatch-num">4</div>
+                <h3>Description — Word Break Hyphen</h3>
+                <span class="menu-tag">Group Charter</span>
+            </div>
+            <div class="mismatch-card-body">
+                <span class="mismatch-type type-description">Description Text</span>
+                <p class="location-text">Group Charter → Dropdown description (<code>paragraph-3</code>)</p>
+                <div class="compare-box">
+                    <div class="compare-side desktop">
+                        <div class="side-label">🖥 Desktop</div>
+                        <div class="side-text">Large-scale private group travel for <span class="highlight-word">corporations</span>, teams, events, and institutions.</div>
+                    </div>
+                    <div class="compare-side mobile">
+                        <div class="side-label">📱 Mobile</div>
+                        <div class="side-text">Large-scale private group travel for <span class="highlight-word">cor-porations</span>, teams, events, and institutions.</div>
+                    </div>
+                </div>
+                <p style="color:#888; font-size:0.82rem; margin-top:12px;">
+                    ✅ Verified by: automated script (Section 3: Description Texts)<br>
+                    Mobile-তে "cor-porations" — ভুল word break। "corporations" হওয়া উচিত।
+                </p>
+            </div>
+        </div>
+
+        <!-- MATCHED ITEMS -->
+        <div class="match-section">
+            <h2>✅ যা সব ঠিক আছে (100% Match)</h2>
+            <div class="match-grid">
+                <div class="match-item">
+                    <span class="menu-name">Menu Items</span>
+                    <span class="match-count">91/91 items identical ✓</span>
+                </div>
+                <div class="match-item">
+                    <span class="menu-name">Item Links</span>
+                    <span class="match-count">All hrefs identical ✓</span>
+                </div>
+                <div class="match-item">
+                    <span class="menu-name">Item Tags</span>
+                    <span class="match-count">Most Popular, Best Value ✓</span>
+                </div>
+                <div class="match-item">
+                    <span class="menu-name">CTA Buttons</span>
+                    <span class="match-count">All CTA links identical ✓</span>
+                </div>
+                <div class="match-item">
+                    <span class="menu-name">Fly Menu</span>
+                    <span class="match-count">Items ✓ Links ✓ Headers ✓ Desc ✓</span>
+                </div>
+                <div class="match-item">
+                    <span class="menu-name">Programs Menu</span>
+                    <span class="match-count">Items ✓ Links ✓ Headers ✓ Desc ✓</span>
+                </div>
+            </div>
+        </div>
+
+        <p class="note">
+            Automated check (Node.js) + grep + manual verification দিয়ে confirm করা।<br>
+            Text case differences সম্পূর্ণ ignore করা হয়েছে।<br>
+            Generated: October 2, 2026
+        </p>
+    </div>
+</body>
+</html>

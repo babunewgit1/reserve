@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Document</title>
+   </head>
+   <body>
+      <script>
+         // Split code: show 1st code if exists, otherwise fallback to 2nd
+         document.querySelectorAll(".split_code").forEach((span) => {
+            const codes = span.textContent
+               .split("|")
+               .map((c) => c.trim())
+               .filter((c) => c.length > 0);
+
+            if (codes.length > 0) {
+               span.textContent = codes[0];
+            }
+
+            // Replace span with plain text so flex doesn't separate it
+            const textNode = document.createTextNode(span.textContent);
+            span.parentNode.replaceChild(textNode, span);
+         });
+
+         //line seperator with pipe sign (|)
+         document
+            .querySelectorAll(".city_item_cms .ctbb_item")
+            .forEach((item) => {
+               const para = item.querySelector(".para_mcs");
+               if (!para) return;
+
+               const rawText = para.textContent;
+               const lines = rawText
+                  .split("|")
+                  .map((t) => t.trim())
+                  .filter((t) => t.length > 0);
+
+               if (lines.length <= 1) return;
+
+               const imgDiv = item.querySelector(".ctbb_item_img");
+
+               para.remove();
+
+               lines.forEach((lineText, index) => {
+                  if (index === 0) {
+                     const newPara = document.createElement("p");
+                     newPara.className = "para_mcs";
+                     newPara.textContent = lineText;
+                     item.appendChild(newPara);
+                  } else {
+                     const newItem = document.createElement("div");
+                     newItem.className = "ctbb_item";
+
+                     if (imgDiv) {
+                        const newImgDiv = imgDiv.cloneNode(true);
+                        newItem.appendChild(newImgDiv);
+                     }
+
+                     const newPara = document.createElement("p");
+                     newPara.className = "para_mcs";
+                     newPara.textContent = lineText;
+                     newItem.appendChild(newPara);
+                     item.parentElement.appendChild(newItem);
+                  }
+               });
+            });
+
+         //Tab for cms content
+         document.addEventListener("DOMContentLoaded", () => {
+            const tabItem = document.querySelectorAll(".city_tab_cl_name");
+            const tabContent = document.querySelectorAll(".city_tab_cnt_item");
+            const tabWrappers = document.querySelectorAll(".city_tab_cl_item");
+
+            tabItem.forEach((tab) => {
+               tab.addEventListener("click", function () {
+                  const tabAttr = tab.getAttribute("data-target");
+                  tabItem.forEach((t) => t.classList.remove("active"));
+                  tabWrappers.forEach((w) => w.classList.remove("active"));
+
+                  tab.classList.add("active");
+                  const parentWrapper = tab.closest(".city_tab_cl_item");
+                  if (parentWrapper) {
+                     parentWrapper.classList.add("active");
+                  }
+
+                  tabContent.forEach((cnt) => {
+                     const cntAttr = cnt.getAttribute("data-list");
+                     if (cntAttr === tabAttr) {
+                        cnt.classList.add("active");
+                     } else {
+                        cnt.classList.remove("active");
+                     }
+                  });
+               });
+            });
+
+            // Set the 1st tab and its corresponding content active by default
+            if (tabItem.length > 0) {
+               tabItem[0].classList.add("active");
+               const parentWrapper = tabItem[0].closest(".city_tab_cl_item");
+               if (parentWrapper) {
+                  parentWrapper.classList.add("active");
+               }
+
+               const firstTarget = tabItem[0].getAttribute("data-target");
+               const matchingContent = document.querySelector(
+                  `.city_tab_cnt_item[data-list="${firstTarget}"]`,
+               );
+               if (matchingContent) {
+                  matchingContent.classList.add("active");
+               }
+            }
+         });
+
+         //fixing price text from another cms collection.
+         const singleLine = document.querySelectorAll(".single_line");
+         const singleValue = document.querySelectorAll(".single_value");
+
+         singleLine.forEach((line, index) => {
+            const valEl = singleValue[index];
+            if (!valEl) return;
+
+            const rawVal = valEl.textContent.trim();
+            const num = parseFloat(rawVal.replace(/[^0-9.]/g, ""));
+
+            if (!isNaN(num)) {
+               const formattedVal = new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  maximumFractionDigits: 0,
+               }).format(num);
+               line.textContent = line.textContent.trim();
+
+               const span = document.createElement("span");
+               span.className = "currency";
+               span.textContent = formattedVal;
+
+               line.appendChild(document.createTextNode(" "));
+               line.appendChild(span);
+            }
+         });
+
+         // Hide the original single_value elements
+         singleValue.forEach((valEl) => {
+            valEl.style.display = "none";
+         });
+
+         const doubblePrice = document.querySelectorAll(".doubble_price");
+         const doubbleOneValue =
+            document.querySelectorAll(".doubble_one_value");
+         const doubbleTwoValue =
+            document.querySelectorAll(".doubble_two_value");
+
+         doubblePrice.forEach((priceEl, index) => {
+            const oneValEl = doubbleOneValue[index];
+            const twoValEl = doubbleTwoValue[index];
+            if (!oneValEl || !twoValEl) return;
+
+            const rawVal1 = oneValEl.textContent.trim();
+            const rawVal2 = twoValEl.textContent.trim();
+
+            const num1 = parseFloat(rawVal1.replace(/[^0-9.]/g, ""));
+            const num2 = parseFloat(rawVal2.replace(/[^0-9.]/g, ""));
+
+            if (!isNaN(num1) && !isNaN(num2)) {
+               // 1st value: round down to the nearest thousand (lower round number)
+               const rounded1 = Math.floor(num1 / 1000) * 1000;
+
+               // 2nd value: round up to the nearest thousand (higher round number)
+               const rounded2 = Math.ceil(num2 / 1000) * 1000;
+
+               // Format both as currency style
+               const formatter = new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  maximumFractionDigits: 0,
+               });
+
+               const formatted1 = formatter.format(rounded1);
+               const formatted2 = formatter.format(rounded2);
+
+               // Clean the original text first to prevent duplicate appends on hot reload
+               priceEl.textContent = priceEl.textContent.trim();
+
+               // Create span elements with class "currency"
+               const span1 = document.createElement("span");
+               span1.className = "currency";
+               span1.textContent = formatted1;
+
+               const span2 = document.createElement("span");
+               span2.className = "currency";
+               span2.textContent = formatted2;
+
+               // Append space, first span, " to ", and second span
+               priceEl.appendChild(document.createTextNode(" "));
+               priceEl.appendChild(span1);
+               priceEl.appendChild(document.createTextNode(" to "));
+               priceEl.appendChild(span2);
+            }
+         });
+
+         // Hide the original doubble_one_value and doubble_two_value elements
+         doubbleOneValue.forEach((el) => {
+            el.style.display = "none";
+         });
+         doubbleTwoValue.forEach((el) => {
+            el.style.display = "none";
+         });
+
+         // btsingle: convert text value like "3630" to "$3,500/hr +"
+         const btsingle = document.querySelectorAll(".btsingle");
+
+         btsingle.forEach((el) => {
+            const rawText = el.textContent.trim();
+            const num = parseFloat(rawText.replace(/[^0-9.]/g, ""));
+
+            if (!isNaN(num)) {
+               const rounded = Math.floor(num / 1000) * 1000;
+               const formatted = new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  maximumFractionDigits: 0,
+               }).format(rounded);
+
+               el.textContent = "(" + formatted + "/hr +)";
+            }
+         });
+
+         // bt_dubble: two separate .bt_dubble elements per .city_cp_box_item
+         // e.g. "5102" and "8173" → "$5,000 - $9,000/hr +"
+         const btDubbleItems = document.querySelectorAll(".city_cp_box_item");
+
+         btDubbleItems.forEach((boxItem) => {
+            const dubbleEls = boxItem.querySelectorAll(".bt_dubble");
+            if (dubbleEls.length < 2) return;
+
+            const rawVal1 = dubbleEls[0].textContent.trim();
+            const rawVal2 = dubbleEls[1].textContent.trim();
+
+            const num1 = parseFloat(rawVal1.replace(/[^0-9.]/g, ""));
+            const num2 = parseFloat(rawVal2.replace(/[^0-9.]/g, ""));
+
+            if (!isNaN(num1) && !isNaN(num2)) {
+               const rounded1 = Math.floor(num1 / 1000) * 1000;
+               const rounded2 = Math.ceil(num2 / 1000) * 1000;
+
+               const formatter = new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  maximumFractionDigits: 0,
+               });
+
+               const formatted1 = formatter.format(rounded1);
+               const formatted2 = formatter.format(rounded2);
+
+               // Set the formatted range in the first element
+               dubbleEls[0].textContent =
+                  "(" + formatted1 + " - " + formatted2 + "/hr +)";
+
+               // Hide the second element's wrapper
+               const secondWrapper = dubbleEls[1].closest(
+                  ".city_cp_cst_list_wrapper",
+               );
+               if (secondWrapper) {
+                  secondWrapper.style.display = "none";
+               } else {
+                  dubbleEls[1].style.display = "none";
+               }
+            }
+         });
+
+         // FAQ Accordion Toggle
+         const faqItems = document.querySelectorAll(".faq_item-2");
+
+         faqItems.forEach((item) => {
+            const heading = item.querySelector(".faq_item_heading");
+            const paraWrapper = item.querySelector(".faq_item_para");
+            const answer = item.querySelector(".faq_item_ans-2");
+            const arrow = item.querySelector(".faq_down");
+
+            if (!heading || !paraWrapper) return;
+
+            // Hide FAQ items with empty answers
+            if (answer && answer.classList.contains("w-dyn-bind-empty")) {
+               item.style.display = "none";
+               return;
+            }
+
+            // Hide answers by default
+            paraWrapper.style.maxHeight = "0";
+            paraWrapper.style.overflow = "hidden";
+            paraWrapper.style.transition = "max-height 0.4s ease";
+
+            // Arrow rotation transition
+            if (arrow) {
+               arrow.style.transition = "transform 0.4s ease";
+            }
+
+            heading.style.cursor = "pointer";
+
+            heading.addEventListener("click", () => {
+               const isOpen = item.classList.contains("active");
+
+               // Close all other FAQ items
+               faqItems.forEach((otherItem) => {
+                  if (otherItem !== item) {
+                     otherItem.classList.remove("active");
+                     const otherPara =
+                        otherItem.querySelector(".faq_item_para");
+                     const otherArrow = otherItem.querySelector(".faq_down");
+                     if (otherPara) otherPara.style.maxHeight = "0";
+                     if (otherArrow)
+                        otherArrow.style.transform = "rotate(0deg)";
+                  }
+               });
+
+               // Toggle current item
+               if (isOpen) {
+                  item.classList.remove("active");
+                  paraWrapper.style.maxHeight = "0";
+                  if (arrow) arrow.style.transform = "rotate(0deg)";
+               } else {
+                  item.classList.add("active");
+                  paraWrapper.style.maxHeight = paraWrapper.scrollHeight + "px";
+                  if (arrow) arrow.style.transform = "rotate(180deg)";
+               }
+            });
+         });
+
+         // ─── Route Map Generator ───────────────────────────────────────────────────
+         (function () {
+            // Degrees ↔ Radians helpers
+            function toRad(deg) {
+               return (deg * Math.PI) / 180;
+            }
+            function toDeg(rad) {
+               return (rad * 180) / Math.PI;
+            }
+
+            // Compute N intermediate points along the great-circle between two coords
+            function greatCirclePoints(lat1, lng1, lat2, lng2, n) {
+               const phi1 = toRad(lat1),
+                  lam1 = toRad(lng1);
+               const phi2 = toRad(lat2),
+                  lam2 = toRad(lng2);
+               const d =
+                  2 *
+                  Math.asin(
+                     Math.sqrt(
+                        Math.pow(Math.sin((phi2 - phi1) / 2), 2) +
+                           Math.cos(phi1) *
+                              Math.cos(phi2) *
+                              Math.pow(Math.sin((lam2 - lam1) / 2), 2),
+                     ),
+                  );
+               const pts = [];
+               for (let i = 0; i <= n; i++) {
+                  const f = i / n;
+                  const A = Math.sin((1 - f) * d) / Math.sin(d);
+                  const B = Math.sin(f * d) / Math.sin(d);
+                  const x =
+                     A * Math.cos(phi1) * Math.cos(lam1) +
+                     B * Math.cos(phi2) * Math.cos(lam2);
+                  const y =
+                     A * Math.cos(phi1) * Math.sin(lam1) +
+                     B * Math.cos(phi2) * Math.sin(lam2);
+                  const z = A * Math.sin(phi1) + B * Math.sin(phi2);
+                  pts.push([
+                     toDeg(Math.atan2(z, Math.sqrt(x * x + y * y))),
+                     toDeg(Math.atan2(y, x)),
+                  ]);
+               }
+               return pts;
+            }
+
+            function initMap() {
+               const mapContainer =
+                  document.querySelector(".map_for_cordinate");
+               if (!mapContainer) return;
+
+               // ── Read coordinates from DOM ──────────────────────────────────────
+               const depLat = parseFloat(
+                  document.querySelector(".departure_lat")?.textContent,
+               );
+               const depLng = parseFloat(
+                  document.querySelector(".departure_lng")?.textContent,
+               );
+               const arrLat = parseFloat(
+                  document.querySelector(".arrival_lat")?.textContent,
+               );
+               const arrLng = parseFloat(
+                  document.querySelector(".arrival_lng")?.textContent,
+               );
+
+               if ([depLat, depLng, arrLat, arrLng].some(isNaN)) return;
+
+               // ── Optional city names & flags from DOM (falls back gracefully) ───
+               const depCity =
+                  document
+                     .querySelector(".departure_place")
+                     ?.textContent?.trim() || "Departure";
+               const arrCity =
+                  document
+                     .querySelector(".arrival_place")
+                     ?.textContent?.trim() || "Arrival";
+
+               // ── Create Leaflet map (non-interactive, cinematic) ────────────────
+               const map = L.map(mapContainer, {
+                  zoomControl: false,
+                  attributionControl: false,
+                  scrollWheelZoom: false,
+                  dragging: false,
+                  doubleClickZoom: false,
+                  touchZoom: false,
+                  keyboard: false,
+               });
+
+               // Free ESRI satellite tiles — no API key required
+               L.tileLayer(
+                  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                  { maxZoom: 18, tileSize: 256 },
+               ).addTo(map);
+
+               // ── Great-circle arc — layered polylines for glow effect ───────────
+               const arc = greatCirclePoints(
+                  depLat,
+                  depLng,
+                  arrLat,
+                  arrLng,
+                  120,
+               );
+               L.polyline(arc, {
+                  color: "#4ac3ff",
+                  weight: 10,
+                  opacity: 0.15,
+               }).addTo(map); // outer glow
+               L.polyline(arc, {
+                  color: "#4ac3ff",
+                  weight: 5,
+                  opacity: 0.55,
+               }).addTo(map); // mid glow
+               L.polyline(arc, {
+                  color: "#a8e4ff",
+                  weight: 2,
+                  opacity: 0.95,
+               }).addTo(map); // bright core
+
+               // ── Arrival marker: label above → dot below ────────────────────────
+               function arrivalIcon(name) {
+                  return L.divIcon({
+                     className: "",
+                     html: `
+               <div style="display:flex;flex-direction:column;align-items:center;gap:5px;transform:translateX(-50%)">
+                  <div class="city_map_label">
+                     <span class="city_name_text">${name}</span>
+                  </div>
+                  <div class="city_map_dot"></div>
+               </div>`,
+                     iconAnchor: [0, 49], // label(~36px) + gap(5px) + dot-radius(8px)
+                     iconSize: null,
+                  });
+               }
+
+               // ── Departure marker: dot above → label below ──────────────────────
+               function departureIcon(name) {
+                  return L.divIcon({
+                     className: "",
+                     html: `
+               <div style="display:flex;flex-direction:column;align-items:center;gap:5px;transform:translateX(-50%)">
+                  <div class="city_map_dot"></div>
+                  <div class="city_map_label">
+                     <span class="city_name_text">${name}</span>
+                  </div>
+               </div>`,
+                     iconAnchor: [0, 8], // anchor at dot-center (dot-radius 8px from top)
+                     iconSize: null,
+                  });
+               }
+
+               L.marker([depLat, depLng], {
+                  icon: departureIcon(depCity),
+               }).addTo(map);
+               L.marker([arrLat, arrLng], { icon: arrivalIcon(arrCity) }).addTo(
+                  map,
+               );
+
+               // ── Fit view to both markers with generous padding ─────────────────
+               map.fitBounds(
+                  L.latLngBounds([
+                     [depLat, depLng],
+                     [arrLat, arrLng],
+                  ]),
+                  { padding: [70, 90] },
+               );
+            }
+
+            // Boot map after DOM is ready
+            if (document.readyState === "loading") {
+               document.addEventListener("DOMContentLoaded", initMap);
+            } else {
+               initMap();
+            }
+         })();
+      </script>
+   </body>
+</html>

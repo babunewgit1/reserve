@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Document</title>
+      <link rel="stylesheet" href="style.css" />
+      <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.14.3/dist/algoliasearch.umd.js"></script>
+      <script src="script.js" defer></script>
+   </head>
+   <body>
+      <section class="reserve-search">
+         <form class="search-bar" novalidate>
+            <div class="search-field search-field--city">
+               <div class="search-field__control">
+                  <label class="search-field__label" for="city">Your city or airport<span class="search-field__required">*</span></label>
+                  <input
+                     class="search-field__input"
+                     id="city"
+                     name="city"
+                     type="text"
+                     placeholder="Search city, airport name or airport code"
+                     autocomplete="off"
+                     role="combobox"
+                     aria-expanded="false"
+                     aria-controls="cityList"
+                     aria-autocomplete="list"
+                  />
+                  <svg class="search-field__icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                     <circle cx="8.4" cy="5.6" r="4.4" />
+                     <path d="M5.2 8.8 1.3 12.7" />
+                  </svg>
+               </div>
+               <div class="search-dropdown search-dropdown--city">
+                  <p class="search-dropdown__hint">Type city, airport name or airport code</p>
+                  <ul class="search-dropdown__results" id="cityList" role="listbox" hidden></ul>
+               </div>
+               <input type="hidden" name="airport" />
+            </div>
+
+            <div class="search-field search-field--select">
+               <button class="search-field__control" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="distanceList">
+                  <span class="search-field__label">How far could you travel to depart?</span>
+                  <span class="search-field__value">Select</span>
+                  <svg class="search-field__icon search-field__chevron" width="12" height="7" viewBox="0 0 12 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                     <path d="M1 1l5 5 5-5" />
+                  </svg>
+               </button>
+               <ul class="search-dropdown search-dropdown--select" id="distanceList" role="listbox">
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="25">25 miles</li>
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="50">50 miles</li>
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="100">100 miles</li>
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="200">200 miles</li>
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="not-sure">Not Sure</li>
+               </ul>
+               <input type="hidden" name="distance" />
+            </div>
+
+            <div class="search-field search-field--select">
+               <button class="search-field__control" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="flexibilityList">
+                  <span class="search-field__label">How flexible are you?</span>
+                  <span class="search-field__value">Select</span>
+                  <svg class="search-field__icon search-field__chevron" width="12" height="7" viewBox="0 0 12 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                     <path d="M1 1l5 5 5-5" />
+                  </svg>
+               </button>
+               <ul class="search-dropdown search-dropdown--select" id="flexibilityList" role="listbox">
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="24-hours">24 hours</li>
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="2-3-days">2–3 day</li>
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="1-week">1 week</li>
+                  <li class="search-option" role="option" aria-selected="false" tabindex="-1" data-value="flexible">Flexible</li>
+               </ul>
+               <input type="hidden" name="flexibility" />
+            </div>
+
+            <button class="search-bar__submit" type="submit">Check my reserve<br />opportunities</button>
+         </form>
+      </section>
+   </body>
+</html>

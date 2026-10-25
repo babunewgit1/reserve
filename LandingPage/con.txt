@@ -1,0 +1,84 @@
+
+pritpalsohi Oct 23, 2026, 8:21 PM (edited)
+@mahmudulhasan126
+
+You can pass date in simple format 10/26/2020, no need to pass time, backend query already added to filter this
+
+Yes to date is correct, you can add 1 year if user select ‘flexible’, don’t skip
+
+Radius not sure, you can pass any higher number like 1000, 2000 etc.
+
+Pagination:
+
+Yes total count shows in api response,
+
+Yes items_from 1 based and correct for page 1, 2 as you mentioned.
+
+Thanks
+
+
+•
+Reply
+
+Mahmudul Hasan Oct 23, 2026, 8:09 PM
+@pritpalsohi  Thanks for the detailed explanation! The address part is clear. I'll send the search text, and the backend will find the airport ID.
+
+I have a few questions before I connect the form to the endpoint:
+
+Date & time format
+In the example URL, from_date and to_date only have the date (e.g. 10/26/2020), no time. Since the range should start from the current date and time, can I send the full date-time in ISO format in UTC, like 2026-10-23T14:00:00.000Z? Will the backend filter by time as well, or only by date?
+
+Calculating to_date
+My plan is: from_date = the moment the user clicks search, and to_date = from_date + the "How flexible are you?" value. Mapping:
+
+24 hours → +24 hours
+
+2–3 day → +3 days (is that okay?)
+
+1 week → +7 days
+
+Flexible → ? What should I send here? A large range (e.g. 1 year), or skip to_date?
+
+Radius "Not Sure"
+The radius dropdown has 25 / 50 / 100 / 200 miles and "Not Sure". What should radius_miles be for "Not Sure"?
+
+Pagination
+In the example, items_from=1 and items_until=50. Is items_from 1-based? So page 2 would be items_from=51&items_until=100, right? Also, does the response include a total count, so I know when there are no more results?
+
+Thanks!
+
+
+•
+Edit
+•
+Delete
+
+pritpalsohi Oct 23, 2026, 5:44 PM
+@mahmudulhasan126
+
+Yes, we need to send all 6 parameters. The from_date and to_date should define the time period for fetching deals. For example, if we specify 24 hours, the range should be from the current date and time to the next 24 hours.
+
+The items_from and items_until parameters are for pagination, allowing us to fetch deals in chunks.
+
+The radius_miles value should be sent according to the Figma design. For the address parameter, we should send the search text until we have the airport ID for that location. If you can pass the airport ID from the frontend, I can replace the text with the airport ID. However, how will you identify the airport ID for a specific search text?
+
+FYI, I’ve already added a backend filter that searches for the airport ID based on the text you send and fetches the results using that airport ID.
+
+
+•
+Reply
+
+Mahmudul Hasan Oct 23, 2026, 5:04 PM
+
+@pritpalsohi
+I did an initial check of the API. I need to send a total of 6 query parameters to the API. They are...
+
+
+
+from_date = 10/26/2020
+to_date = 11/26/2027
+address = Berlin
+items_until = 50
+items_from = 1
+radius_miles = 50
+But if you notice the Figma, you'll see there's an option to send only 3 parameters. Also, in the first input, the airport's address, like "Barlin", is being sent directly to the API. I think instead of sending the direct address, the airport's unique ID should be sent. Let me know what you think.
